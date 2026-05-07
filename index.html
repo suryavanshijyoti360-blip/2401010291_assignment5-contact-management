@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium Contact Manager</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',sans-serif;
+}
+
+body{
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+}
+
+/* MAIN BOX */
+.box{
+  width:380px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  border-radius:16px;
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* TITLE */
+h2{
+  text-align:center;
+  margin-bottom:10px;
+}
+
+/* INPUTS */
+input{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
+  border:none;
+  border-radius:10px;
+  outline:none;
+}
+
+/* BUTTON */
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:20px;
+  background:#38bdf8;
+  cursor:pointer;
+  margin-top:5px;
+  transition:0.3s;
+}
+
+button:hover{
+  background:#0ea5e9;
+}
+
+/* SEARCH */
+#search{
+  margin-top:10px;
+}
+
+/* CONTACT CARD */
+.contact{
+  background:#334155;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  transition:0.3s;
+}
+
+.contact:hover{
+  transform:scale(1.02);
+}
+
+.contact b{
+  font-size:16px;
+}
+
+/* ACTION BUTTONS */
+.actions{
+  margin-top:6px;
+}
+
+.actions button{
+  margin-right:5px;
+  font-size:12px;
+}
+
+/* EMPTY STATE */
+.empty{
+  text-align:center;
+  margin-top:15px;
+  opacity:0.7;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h2>📞 Contact Manager</h2>
+
+<input id="name" placeholder="Name">
+<input id="phone" placeholder="Phone">
+<input id="email" placeholder="Email">
+
+<button onclick="addContact()">Add Contact</button>
+
+<input id="search" placeholder="Search contacts..." onkeyup="searchContacts()">
+
+<div id="contactList"></div>
+
+</div>
+
+<script>
+
+let contacts = JSON.parse(localStorage.getItem('contacts')) || [];
+
+// SAVE
+function saveContacts(){
+  localStorage.setItem('contacts', JSON.stringify(contacts));
+}
+
+// DISPLAY
+function displayContacts(list = contacts){
+  let container = document.getElementById('contactList');
+  container.innerHTML = '';
+
+  if(list.length === 0){
+    container.innerHTML = `<div class="empty">No contacts found</div>`;
+    return;
+  }
+
+  list.forEach((c, index)=>{
+    let div = document.createElement('div');
+    div.className = 'contact';
+
+    div.innerHTML = `
+      <b>${c.name}</b><br>
+      📞 ${c.phone}<br>
+      📧 ${c.email}
+
+      <div class="actions">
+        <button onclick="editContact(${index})">✏️ Edit</button>
+        <button onclick="deleteContact(${index})">🗑 Delete</button>
+      </div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+// ADD
+function addContact(){
+  let name = document.getElementById('name').value.trim();
+  let phone = document.getElementById('phone').value.trim();
+  let email = document.getElementById('email').value.trim();
+
+  if(!name || !phone || !email){
+    alert("Please fill all fields");
+    return;
+  }
+
+  contacts.push({ name, phone, email });
+  saveContacts();
+  displayContacts();
+
+  document.getElementById('name').value='';
+  document.getElementById('phone').value='';
+  document.getElementById('email').value='';
+}
+
+// DELETE
+function deleteContact(index){
+  contacts.splice(index,1);
+  saveContacts();
+  displayContacts();
+}
+
+// EDIT (Better UX)
+function editContact(index){
+  let c = contacts[index];
+
+  let newName = prompt("Edit Name", c.name);
+  let newPhone = prompt("Edit Phone", c.phone);
+  let newEmail = prompt("Edit Email", c.email);
+
+  if(newName && newPhone && newEmail){
+    contacts[index] = {
+      name:newName,
+      phone:newPhone,
+      email:newEmail
+    };
+    saveContacts();
+    displayContacts();
+  }
+}
+
+// SEARCH
+function searchContacts(){
+  let val = document.getElementById('search').value.toLowerCase();
+
+  let filtered = contacts.filter(c =>
+    c.name.toLowerCase().includes(val) ||
+    c.phone.includes(val) ||
+    c.email.toLowerCase().includes(val)
+  );
+
+  displayContacts(filtered);
+}
+
+// INITIAL LOAD
+displayContacts();
+
+</script>
+
+</body>
+</html>
